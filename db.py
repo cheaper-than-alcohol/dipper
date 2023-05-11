@@ -33,7 +33,7 @@ def cursor_manager(db_conn):
         if cursor:
             cursor.close()
     except Exception as e:
-        logger.warning("Problem observed managing a cursor", repr(e))
+        logger.warning("Problem observed managing a cursor {}", repr(e))
         # if cursor:
         #     cursor.close()
         raise e
