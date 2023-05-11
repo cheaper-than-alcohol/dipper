@@ -75,7 +75,7 @@ def create_db():
             cursor.execute(ddl)
 
 
-@retry(on_error=(ProgrammingError, UndefinedTable), on_retry=create_db, limit=2)
+@retry(on_error=(ProgrammingError, ), on_retry=create_db, limit=2)
 def add_observation(connection, observation):
     check_sql = f"select 1 from observations where observation_time = '{observation.observation_time}'"
     insert_sql = """insert into observations 
