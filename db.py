@@ -33,9 +33,9 @@ def cursor_manager(db_conn):
         if cursor:
             cursor.close()
     except Exception as e:
-        logger.error("Problem observed managing a cursor:", repr(e))
-        if cursor:
-            cursor.close()
+        logger.warning("Problem observed managing a cursor %s", repr(e))
+        # if cursor:
+        #     cursor.close()
         raise e
     finally:
         db_conn.commit()
@@ -45,7 +45,7 @@ Observation = collections.namedtuple("Observation", ("observe_id", "observation_
                                                      "rel_humidity", "wind_speed", "wind_dir", "dew_point"))
 
 
-def create_db():
+def create_db(_):
     ddl = """
     create table if not exists observations (
         id uuid primary key,
@@ -70,7 +70,7 @@ def create_db():
         archive int
     );
         """
-    with db_connection(None) as conn:
+    with db_connection() as conn:
         with cursor_manager(conn) as cursor:
             cursor.execute(ddl)
 
