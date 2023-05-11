@@ -33,9 +33,9 @@ def cursor_manager(db_conn):
         if cursor:
             cursor.close()
     except Exception as e:
-        logger.error("Problem observed managing a cursor: class {}", e.__class__.__name__, repr(e))
-        if cursor:
-            cursor.close()
+        logger.warning("Problem observed managing a cursor", repr(e))
+        # if cursor:
+        #     cursor.close()
         raise e
     finally:
         db_conn.commit()
