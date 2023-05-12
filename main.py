@@ -111,10 +111,10 @@ def main():
     with open(settings_filepath) as settings_file:
         settings = json.load(settings_file)
 
-    # work(settings)
-    with ScheduledThreadPoolExecutor() as stpool:
-        future = stpool.schedule(work, (settings,), period=settings["sample_rate"])
-        wait([future])
+    work(settings)
+    # with ScheduledThreadPoolExecutor() as stpool:
+    #     future = stpool.schedule(work, (settings,), period=settings["sample_rate"])
+    #     wait([future])
     # weather = Weather()
     # logging.info(weather.find_closest_station())
 
