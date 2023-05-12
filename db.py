@@ -15,7 +15,8 @@ def db_connection():
     try:
         conn = psycopg2.connect(host=os.environ["DB_ADDRESS"],
                                 user=os.environ["DB_USER"],
-                                password=os.environ["DB_PASS"])
+                                password=os.environ["DB_PASS"],
+                                port=os.environ["DB_PORT"])
         if conn is None:
             raise IOError("Cannot open db connection")
         yield conn
