@@ -10,7 +10,7 @@ import logging
 
 logger = logging.getLogger("db")
 
-logger.info("connecting to %s:%s", os.environ["DB_ADDRESS"], os.environ["DB_PORT"])
+logging.info("connecting to %s:%s", os.environ["DB_ADDRESS"], os.environ["DB_PORT"])
 @contextmanager
 def db_connection():
     try:
