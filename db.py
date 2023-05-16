@@ -20,7 +20,7 @@ def db_connection():
                                 port=os.environ["DB_PORT"])
         if conn is None:
             raise IOError("Cannot open db connection")
-        print("connecting to %s:%s", os.environ["DB_ADDRESS"], os.environ["DB_PORT"])
+        logging.info("connecting to %s:%s", os.environ["DB_ADDRESS"], os.environ["DB_PORT"])
         yield conn
     finally:
         if conn is not None:
