@@ -19,10 +19,8 @@ class TableWrapper:
     def add_observation(self, observation: Observation):
         try:
             data_to_send = self._convert_data(observation)
-            response = self.table.get_item(Key={'observation_time': data_to_send['observation_time']})
-            logger.info(response)
-            if "Item" not in response:
-                self.table.put_item(Item=data_to_send)
+            logger.info("data to save %s", data_to_send)
+            self.table.put_item(Item=data_to_send)
         except ClientError as err:
             logger.error(
                 "Couldn't add observaton %s to table %s. Here's why: %s: %s",
@@ -33,8 +31,9 @@ class TableWrapper:
     def _convert_data(self, observation):
 
         converted_date = dateutil.parser.parse(observation.observation_time)
+        converted_date = str(converted_date.timestamp())
         return {
-            "observation_time": int(converted_date.timestamp()),
+            "observation_time": Decimal(converted_date),
             "temp": Decimal(observation.temp),
             "pressure": Decimal(observation.pressure),
             "rel_humidity": Decimal(observation.rel_humidity),

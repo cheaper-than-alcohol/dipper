@@ -64,14 +64,17 @@ class Weather:
         weather_data = response.json()["properties"]
         self.last_reading = db.Observation(
             weather_data["timestamp"],
-            int(weather_data["temperature"]["value"] or -999),
-            int(weather_data["barometricPressure"]["value"] or -1),
-            float(weather_data["relativeHumidity"]["value"] or -1),
-            int(float(weather_data["windSpeed"]["value"] or -999)),
-            int(float(weather_data["windDirection"]["value"] or -999)),
-            int(weather_data["dewpoint"]["value"] or -999)
+            self._convert_datapoint(weather_data["temperature"]["value"] or -999),
+            self._convert_datapoint(weather_data["barometricPressure"]["value"] or -1),
+            self._convert_datapoint(weather_data["relativeHumidity"]["value"] or -1),
+            self._convert_datapoint(weather_data["windSpeed"]["value"] or -999),
+            self._convert_datapoint(weather_data["windDirection"]["value"] or -999),
+            self._convert_datapoint(weather_data["dewpoint"]["value"] or -999)
         )
         return self.last_reading
+
+    def _convert_datapoint(self, datapoint):
+        return "{:.2f}".format(datapoint)
 
     def find_closest_station(self, given_point=MapPoint('home', 40.2392361, -83.0418715)):
         def distance(start, end):
@@ -101,6 +104,8 @@ def handle(event, context):
     data_to_keep = weather.make_observation()
     logging.info("Successful data retrieval %s", data_to_keep)
     weather_table.add_observation(data_to_keep)
+
+    return data_to_keep
 
 
 def main():
