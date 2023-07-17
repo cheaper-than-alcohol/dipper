@@ -1,0 +1,26 @@
+name: Deploy Lambda
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Build Zip file
+        run: ./create_package.sh
+      - name: Push ZipFile Up
+        run: aws s3 cp --region ${{ vars.AWS_REGION }} ./weather.zip s3://function-bucket-drm
+      - name: Update Lambda
+        run: aws lambda update-function-code --function-name app-weather-observation --s3-bucket function-bucket-drm --s3-key weather.zip
+      - name: Zip file Cleanup
+        run: aws s3 rm --region ${{ vars.AWS_REGION }} s3://function-bucket-drm/weather.zip
