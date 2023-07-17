@@ -4,12 +4,10 @@ import json
 import math
 import random
 import logging
-from concurrent.futures import wait
+import boto3
 
 import requests
-from psycopg2 import IntegrityError
 from retryz import retry
-from scheduled_futures import ScheduledThreadPoolExecutor
 
 import db
 
@@ -52,7 +50,7 @@ class Weather:
             else:
                 logging.error("Error found contacting", self.observation_url, repr(error))
         else:
-            logging.error("Unknown error:", repr(error))
+            logging.error("Unknown error: %s", repr(error))
         return False
 
     @retry(on_return=_check_for_bad_observation, on_error=_check_error, wait=_time_to_wait)
@@ -65,7 +63,6 @@ class Weather:
 
         weather_data = response.json()["properties"]
         self.last_reading = db.Observation(
-            weather_data["@id"],
             weather_data["timestamp"],
             int(weather_data["temperature"]["value"] or -999),
             int(weather_data["barometricPressure"]["value"] or -1),
@@ -94,29 +91,21 @@ class Weather:
         return sorted(stations, key=sort_points)[:5]
 
 
-def work(settings):
+def handle(event, context):
+    logging.getLogger().setLevel(logging.INFO)
+
+    dynamic_db = boto3.resource('dynamodb')
     weather = Weather()
-    with db.db_connection() as conn:
-        logging.info("in the connection")
-        data_to_keep = weather.make_observation()
-        logging.info("Successful data retrieval %s", data_to_keep)
-        try:
-            db.add_observation(conn, data_to_keep)
-        except IntegrityError as de:
-            logging.info("Warning: %s", repr(de))
+    weather_table = db.TableWrapper(dynamic_db.Table("weather"))
+    logging.info("in the connection")
+    data_to_keep = weather.make_observation()
+    logging.info("Successful data retrieval %s", data_to_keep)
+    weather_table.add_observation(data_to_keep)
 
 
 def main():
     logging.basicConfig(filename=f'log/observation.log', level=logging.DEBUG)
-    with open(settings_filepath) as settings_file:
-        settings = json.load(settings_file)
-
-    # work(settings)
-    with ScheduledThreadPoolExecutor() as stpool:
-        future = stpool.schedule(work, (settings,), period=settings["sample_rate"])
-        wait([future])
-    # weather = Weather()
-    # logging.info(weather.find_closest_station())
+    handle(None, None)
 
 
 if __name__ == '__main__':
