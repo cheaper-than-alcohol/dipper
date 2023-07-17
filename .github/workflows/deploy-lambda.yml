@@ -17,7 +17,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ vars.AWS_REGION }}
       - name: Build Zip file
-        run: bin/bash ./create_package.sh
+        run: bash ./create_package.sh
       - name: Push ZipFile Up
         run: aws s3 cp --region ${{ vars.AWS_REGION }} ./weather.zip s3://function-bucket-drm
       - name: Update Lambda
